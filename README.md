@@ -8,6 +8,9 @@
 -   [ ] Create new password
 -   [ ] Wallet
 -   [ ] Notification page
+-   [ ] Bookmark
+-   [ ] Help + Content policies + About
+
 
 #### Anh Duy
 
@@ -16,5 +19,4 @@
 -   [ ] Post detail
 -   [ ] Event page
 -   [ ] Event detail page
--   [ ] Help + Content policies + About
 -   [ ] Profile [Posts, Medias, Replies]
