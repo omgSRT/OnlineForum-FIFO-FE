@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-export type PostModalType = 'update' | 'create' | 'draft';
+export type PostModalType = 'update' | 'create' | 'draft' | 'report';
 
 export interface PostState {
     modal: {
@@ -8,7 +8,6 @@ export interface PostState {
         type: PostModalType;
     };
     id?: string;
-    tagId?: string;
 }
 
 const initialStates: PostState = {

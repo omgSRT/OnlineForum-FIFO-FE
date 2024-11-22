@@ -14,6 +14,7 @@ import {
     Image,
     Modal,
     GetProp,
+    Tooltip,
 } from 'antd';
 import GallerySvg from '/public/gallery.svg';
 import EmojiSvg from '/public/emoji.svg';
@@ -34,6 +35,10 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/stores';
 import { useDispatch } from 'react-redux';
 import { setPost } from '@/stores/post';
+import { PaperClipOutlined } from '@ant-design/icons';
+import { useCategoriesListing } from '@/hooks/query/category/use-category-listing';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import Tiptap from '@/components/tiptap/tiptap';
 
 interface CreatePostProps {
     onCancel: OnAction;
@@ -55,21 +60,32 @@ const getBase64 = (file: FileType): Promise<string> =>
     });
 
 export const CreatePost: FC<CreatePostProps> = ({ onCancel }) => {
+    const { accountInfo } = useSelector((state: RootState) => state.account);
     const [form] = Form.useForm();
+
+    const watchContent = Form.useWatch('content');
 
     const { type, open } = useSelector((state: RootState) => state.post.modal);
     const dispatch = useDispatch();
     const [searchParams] = useSearchParams();
     const queryClient = useQueryClient();
-    const { success } = useMessage();
+    const { success, error } = useMessage();
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewImage, setPreviewImage] = useState('');
 
-    const { imgUrl, imgUrlList, setImgUrlList, uploadFile } = useUploadFile();
+    const { imgUrlList, setImgUrlList, uploadFile } = useUploadFile();
+    const { imgUrlList: urlFileList, setImgUrlList: setUrlFileList, uploadFile: upLoadAnotherFile } = useUploadFile();
 
     const [fileList, setFileList] = useState<UploadFile[]>([]);
+    const [anotherFileList, setAnotherFileList] = useState<UploadFile[]>([]);
 
-    const { data: topics, isLoading: isLoadingTopics } = useTopicsListing({ params: initialParams });
+    const { data: topics, isLoading: isLoadingTopics } = useTopicsListing({
+        params: {
+            ...initialParams,
+            categoryId: searchParams.get('category') || undefined,
+        },
+    });
+    const { data: categories } = useCategoriesListing({ params: initialParams });
     const { data: tags, isLoading: isLoadingTags } = useTagsListing({ params: initialParams });
     const { mutate: createPost, isPending: isPendingCreatePost } = useCreatePost();
     const { mutate: createDraftPost, isPending: isPendingCreateDraftPost } = useCreateDraftPost();
@@ -92,6 +108,10 @@ export const CreatePost: FC<CreatePostProps> = ({ onCancel }) => {
                         url: file.url as string,
                     })),
                 }),
+                ...(urlFileList.length > 0 && {
+                    linkFile: urlFileList[0] as string,
+                    postFileUrlRequest: [{ url: urlFileList[0] as string }],
+                }),
             },
             {
                 onSuccess: () => {
@@ -102,9 +122,11 @@ export const CreatePost: FC<CreatePostProps> = ({ onCancel }) => {
                     onCancel && onCancel();
                     form.resetFields();
                     setImgUrlList([]);
+                    setUrlFileList([]);
+                    setAnotherFileList([]);
                 },
-                onError: error => {
-                    message.error(error.message);
+                onError: err => {
+                    error(err.message);
                 },
             },
         );
@@ -125,18 +147,28 @@ export const CreatePost: FC<CreatePostProps> = ({ onCancel }) => {
                         url: file.url as string,
                     })),
                 }),
+                ...(anotherFileList.length > 0 && {
+                    linkFile: anotherFileList[0].url as string,
+                    postFileUrlRequest: [{ url: urlFileList[0] as string }],
+                }),
             },
             {
                 onSuccess: () => {
                     success('Post saved as draft successfully!');
                     queryClient.invalidateQueries({
-                        queryKey: postKeys.listing(),
+                        queryKey: postKeys.drafts({
+                            page: DEFAULT_PAGE,
+                            perPage: DEFAULT_PAGE_SIZE,
+                        }),
                     });
                     onCancel && onCancel();
                     form.resetFields();
+                    setImgUrlList([]);
+                    setUrlFileList([]);
+                    setAnotherFileList([]);
                 },
-                onError: error => {
-                    message.error(error.message);
+                onError: err => {
+                    error(err.message);
                 },
             },
         );
@@ -153,6 +185,20 @@ export const CreatePost: FC<CreatePostProps> = ({ onCancel }) => {
             newImgUrlList.splice(index, 1);
             setImgUrlList(newImgUrlList);
             setFileList(fileList.filter(item => item.uid !== file.uid));
+        }
+    };
+
+    const onChangeAnotherFile: UploadProps['onChange'] = ({ file, fileList: newFileList }) => {
+        setAnotherFileList(newFileList);
+    };
+
+    const onRemoveAnotherFile = (file: UploadFile) => {
+        const index = anotherFileList.indexOf(file);
+        if (index > -1) {
+            const newImgUrlList = urlFileList.slice();
+            newImgUrlList.splice(index, 1);
+            setUrlFileList(newImgUrlList);
+            setAnotherFileList(anotherFileList.filter(item => item.uid !== file.uid));
         }
     };
 
@@ -174,12 +220,32 @@ export const CreatePost: FC<CreatePostProps> = ({ onCancel }) => {
         dispatch(setPost({ modal: { open: true, type: 'draft' } }));
     };
 
+    const topicId = searchParams.get('topicId') || undefined;
+    const tagId = searchParams.get('tagId') || undefined;
+
+    useEffect(() => {
+        if (topicId) {
+            form.setFieldsValue({ topicId });
+        }
+
+        if (tagId) {
+            form.setFieldsValue({ tagId });
+        }
+    }, [topicId, tagId]);
+
     return (
         <Modal
             title={
                 <Flex justify="space-between">
                     Create Post
-                    <Button onClick={handleOpenDraft}>Drafts</Button>
+                    <Button
+                        onClick={handleOpenDraft}
+                        style={{
+                            marginRight: 24,
+                        }}
+                    >
+                        Drafts
+                    </Button>
                 </Flex>
             }
             open={type === 'create' && open}
@@ -189,9 +255,18 @@ export const CreatePost: FC<CreatePostProps> = ({ onCancel }) => {
         >
             <Card>
                 <Flex vertical gap={10}>
-                    <UserInfo />
+                    <UserInfo account={accountInfo!} />
 
-                    <Form<CreatePostPayload> layout="vertical" form={form} name="createPost" onFinish={onFinish}>
+                    <Form<CreatePostPayload>
+                        layout="vertical"
+                        form={form}
+                        name="createPost"
+                        onFinish={onFinish}
+                        // initialValues={{
+                        //     topicId,
+                        //     tagId,
+                        // }}
+                    >
                         <Form.Item<CreatePostPayload>
                             name="title"
                             label="Title"
@@ -237,10 +312,14 @@ export const CreatePost: FC<CreatePostProps> = ({ onCancel }) => {
                             label="Description"
                             rules={[{ required: true, message: 'Please add some description!' }]}
                         >
-                            <Input.TextArea
+                            {/* <Input.TextArea
                                 size="large"
                                 rows={5}
                                 placeholder="Let's share what going on your mind..."
+                            /> */}
+                            <Tiptap
+                                onChange={content => form.setFieldValue('content', content)}
+                                content={watchContent}
                             />
                         </Form.Item>
                     </Form>
@@ -260,6 +339,8 @@ export const CreatePost: FC<CreatePostProps> = ({ onCancel }) => {
                         )}
                     </Flex>
 
+                    <Upload fileList={anotherFileList} onRemove={onRemoveAnotherFile} />
+
                     <Flex align="center" justify="space-between">
                         <Space size="large">
                             <Upload
@@ -270,9 +351,26 @@ export const CreatePost: FC<CreatePostProps> = ({ onCancel }) => {
                                 showUploadList={false}
                                 fileList={fileList}
                             >
-                                <Button type="text" icon={<img src={GallerySvg} />} />
+                                <Tooltip title="Upload Image">
+                                    <Button type="text" icon={<img src={GallerySvg} />} />
+                                </Tooltip>
                             </Upload>
-                            <Button type="text" icon={<img src={EmojiSvg} />} />
+                            {categories?.find(category => category.categoryId === searchParams.get('category'))
+                                ?.name !== 'KNOWLEDGE SHARING' && (
+                                <Upload
+                                    customRequest={upLoadAnotherFile}
+                                    onChange={onChangeAnotherFile}
+                                    onRemove={onRemoveAnotherFile}
+                                    showUploadList={false}
+                                    fileList={anotherFileList}
+                                    maxCount={1}
+                                    accept=".zip,.rar,.7zip,.tar,.tar.gz"
+                                >
+                                    <Tooltip title="Upload File">
+                                        <Button type="text" icon={<PaperClipOutlined />} />
+                                    </Tooltip>
+                                </Upload>
+                            )}
                         </Space>
 
                         <Button

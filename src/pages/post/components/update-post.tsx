@@ -30,6 +30,10 @@ import { useUploadFile } from '@/hooks/use-upload-file';
 import { TopicListingParams, useTopicsListing } from '@/hooks/query/topic/use-topics-listing';
 import { useTagsListing } from '@/hooks/query/tag/use-tags-listing';
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@/consts/common';
+import { useDispatch } from 'react-redux';
+import { setPost } from '@/stores/post';
+import { PaperClipOutlined } from '@ant-design/icons';
+import Tiptap from '@/components/tiptap/tiptap';
 
 interface UpdatePostProps {
     onCancel?: OnAction;
@@ -41,16 +45,24 @@ const initialParams: TopicListingParams = {
 };
 
 export const UpdatePost: FC<UpdatePostProps> = ({ onCancel }) => {
+    const { accountInfo } = useSelector((state: RootState) => state.account);
     const [form] = Form.useForm();
 
+    const watchContent = Form.useWatch('content', form);
+
+    const dispatch = useDispatch();
     const { type, open } = useSelector((state: RootState) => state.post.modal);
     const queryClient = useQueryClient();
-    const { success } = useMessage();
+    const { success, error } = useMessage();
     const id = useSelector((state: RootState) => state.post.id);
 
     const { imgUrl, imgUrlList, setImgUrlList, uploadFile } = useUploadFile();
+    const { imgUrlList: urlFileList, setImgUrlList: setUrlFileList, uploadFile: upLoadAnotherFile } = useUploadFile();
 
     const [fileList, setFileList] = useState<UploadFile[]>([]);
+    const [anotherFileList, setAnotherFileList] = useState<UploadFile[]>([]);
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewImage, setPreviewImage] = useState('');
 
     const { data: topics, isLoading: isLoadingTopics } = useTopicsListing({ params: initialParams });
     const { data: tags, isLoading: isLoadingTags } = useTagsListing({ params: initialParams });
@@ -64,16 +76,33 @@ export const UpdatePost: FC<UpdatePostProps> = ({ onCancel }) => {
     });
 
     const onFinish = (values: UpdatePostPayload) => {
-        updatePost(values, {
-            onSuccess: () => {
-                success('Post updated successfully!');
-                onCancel && onCancel();
-                form.resetFields();
+        updatePost(
+            {
+                ...values,
+                ...(fileList.length > 0 && {
+                    imageUrlList: fileList.map(file => ({
+                        url: file.url as string,
+                    })),
+                }),
+                ...(urlFileList.length > 0 && {
+                    linkFile: urlFileList[0] as string,
+                }),
             },
-            onError: error => {
-                message.error(error.message);
+            {
+                onSuccess: () => {
+                    success('Post updated successfully!');
+                    onCancel && onCancel();
+                    dispatch(setPost({ id: undefined }));
+                    form.resetFields();
+                    setImgUrlList([]);
+                    setUrlFileList([]);
+                    setAnotherFileList([]);
+                },
+                onError: err => {
+                    error(err.message);
+                },
             },
-        });
+        );
     };
 
     const onChangeFile: UploadProps['onChange'] = ({ file, fileList: newFileList }) => {
@@ -86,8 +115,33 @@ export const UpdatePost: FC<UpdatePostProps> = ({ onCancel }) => {
             const newImgUrlList = imgUrlList.slice();
             newImgUrlList.splice(index, 1);
             setImgUrlList(newImgUrlList);
+            setFileList(fileList.filter(item => item.uid !== file.uid));
         }
     };
+
+    const onChangeAnotherFile: UploadProps['onChange'] = ({ file, fileList: newFileList }) => {
+        setAnotherFileList(newFileList);
+    };
+
+    const onRemoveAnotherFile = (file: UploadFile) => {
+        const index = anotherFileList.indexOf(file);
+        if (index > -1) {
+            const newImgUrlList = urlFileList.slice();
+            newImgUrlList.splice(index, 1);
+            setUrlFileList(newImgUrlList);
+            setAnotherFileList(anotherFileList.filter(item => item.uid !== file.uid));
+        }
+    };
+
+    useEffect(() => {
+        const appendFieldFileList = fileList.map((file, index) => {
+            return {
+                ...file,
+                url: imgUrlList[index],
+            };
+        });
+        setFileList(appendFieldFileList);
+    }, [imgUrlList]);
 
     useEffect(() => {
         if (detail) {
@@ -106,6 +160,19 @@ export const UpdatePost: FC<UpdatePostProps> = ({ onCancel }) => {
                 topicId: detail?.topic?.topicId,
                 tagId: detail?.tag?.tagId,
             });
+            setUrlFileList(detail?.linkFile ? [detail?.linkFile] : []);
+            setAnotherFileList(
+                detail?.linkFile
+                    ? [
+                          {
+                              uid: detail?.linkFile,
+                              name: detail?.linkFile,
+                              url: detail?.linkFile,
+                              status: 'done',
+                          },
+                      ]
+                    : [],
+            );
         }
     }, [detail]);
 
@@ -113,7 +180,7 @@ export const UpdatePost: FC<UpdatePostProps> = ({ onCancel }) => {
         <Modal title="Update Post" open={type === 'update' && open} onCancel={onCancel} footer={null} width={'80vw'}>
             <Card>
                 <Flex vertical gap={10}>
-                    <UserInfo />
+                    <UserInfo account={accountInfo!} />
 
                     <Form<UpdatePostPayload> layout="vertical" form={form} name="updatePost" onFinish={onFinish}>
                         <Form.Item<UpdatePostPayload>
@@ -157,21 +224,35 @@ export const UpdatePost: FC<UpdatePostProps> = ({ onCancel }) => {
                         </Form.Item>
 
                         <Form.Item<UpdatePostPayload> name="content" label="Description">
-                            <Input.TextArea
+                            {/* <Input.TextArea
                                 size="large"
                                 rows={5}
                                 placeholder="Let's share what going on your mind..."
+                            /> */}
+                            <Tiptap
+                                onChange={content => form.setFieldValue('content', content)}
+                                content={watchContent || detail?.content || ''}
+                                key={detail?.content || watchContent}
                             />
                         </Form.Item>
                     </Form>
 
                     <Flex gap={10} wrap>
-                        {fileList.map(file => (
-                            <div className="ant-upload" key={file.uid}>
-                                <Image src={file.url} alt={file.url} width={100} height={100} />
-                            </div>
-                        ))}
+                        <Upload listType="picture-card" fileList={fileList} onRemove={onRemoveFile} />
+                        {previewImage && (
+                            <Image
+                                wrapperStyle={{ display: 'none' }}
+                                preview={{
+                                    visible: previewOpen,
+                                    onVisibleChange: visible => setPreviewOpen(visible),
+                                    afterOpenChange: visible => !visible && setPreviewImage(''),
+                                }}
+                                src={previewImage}
+                            />
+                        )}
                     </Flex>
+
+                    <Upload fileList={anotherFileList} onRemove={onRemoveAnotherFile} />
 
                     <Flex align="center" justify="space-between">
                         <Space size="large">
@@ -184,6 +265,18 @@ export const UpdatePost: FC<UpdatePostProps> = ({ onCancel }) => {
                             >
                                 <Button type="text" icon={<img src={GallerySvg} />} />
                             </Upload>
+                            <Upload
+                                customRequest={upLoadAnotherFile}
+                                onChange={onChangeAnotherFile}
+                                onRemove={onRemoveAnotherFile}
+                                showUploadList={false}
+                                fileList={anotherFileList}
+                                maxCount={1}
+                                accept=".zip,.rar,.7zip,.tar,.tar.gz"
+                            >
+                                <Button type="text" icon={<PaperClipOutlined />} />
+                            </Upload>
+
                             <Button type="text" icon={<img src={EmojiSvg} />} />
                         </Space>
 

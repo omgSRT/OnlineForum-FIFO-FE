@@ -19,6 +19,8 @@ export interface AccountState {
   selectedKeys: string[];
 
   accountInfo?: Account
+
+  userInfo?: Account
 }
 
 const initialStates: AccountState = {

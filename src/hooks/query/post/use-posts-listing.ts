@@ -8,6 +8,9 @@ export type PostListingParams = PaginationParams & {
     topicId?: string;
     tagId?: string;
     statuses?: PostStatus[];
+    accountId?: string;
+    categoryId?: string;
+    isFolloweeIncluded?: boolean;
 };
 
 type PostListingProps = {
@@ -27,6 +30,24 @@ export const usePostsListing = ({ params }: PostListingProps) => {
 
     return useQuery<Post[]>({
         queryKey: postKeys.listing(params),
+        queryFn: fetchPosts,
+        placeholderData: keepPreviousData,
+    });
+};
+
+export const useDraftsListing = ({ params }: PostListingProps) => {
+    const fetchPosts = async (): Promise<Post[]> => {
+        const { entity } = await request<Post[]>('get', '/post/getall/draft/by-current-user', params, {
+            paramsSerializer: {
+                indexes: null,
+            },
+        });
+
+        return entity;
+    };
+
+    return useQuery<Post[]>({
+        queryKey: postKeys.drafts(params),
         queryFn: fetchPosts,
         placeholderData: keepPreviousData,
     });

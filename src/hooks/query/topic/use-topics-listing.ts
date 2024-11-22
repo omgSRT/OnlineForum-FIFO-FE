@@ -4,7 +4,9 @@ import { PaginationParams, Response } from '@/types';
 import { Topic } from '@/types/topic/topic';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
-export type TopicListingParams = PaginationParams;
+export type TopicListingParams = PaginationParams & {
+    categoryId?: string;
+};
 
 type TopicListingProps = {
     params: TopicListingParams;

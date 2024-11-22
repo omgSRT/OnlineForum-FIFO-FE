@@ -1,21 +1,31 @@
 import { Flex, Tag, Typography } from 'antd';
 import LocationSvg from '/public/location.svg';
+import { Event } from '@/types/event';
+import dayjsConfig from '@/utils/dayjs';
+import { useNavigate } from 'react-router-dom';
+import { PATHS } from '@/utils/paths';
 
-export const EventItem = () => {
+interface EventItemProps {
+    event: Event;
+}
+
+export const EventItem = ({ event }: EventItemProps) => {
+    const navigate = useNavigate();
+
     return (
-        <Flex gap={16} className='event-item'>
+        <Flex gap={16} className="event-item" onClick={() => navigate(PATHS.EVENT_DETAIL.replace(':id', event?.eventId))}>
             <Flex vertical justify="space-between" align="center" className="event-date-wrapper">
                 <Typography.Title level={5} style={{ textTransform: 'uppercase' }}>
-                    MAR
+                    {dayjsConfig(event?.startDate).format('MMM')}
                 </Typography.Title>
                 <Typography.Title level={2} className="event-date">
-                    12
+                    {dayjsConfig(event?.startDate).format('DD')}
                 </Typography.Title>
             </Flex>
 
-            <Flex vertical gap={10}>
+            <Flex vertical gap={10} align="center">
                 <Typography.Title level={5} style={{ textTransform: 'uppercase' }}>
-                    ETHVIETNAM 2024
+                    {event?.title}
                 </Typography.Title>
                 <Flex align="center" gap={6}>
                     <img src={LocationSvg} alt="location" />
@@ -25,13 +35,8 @@ export const EventItem = () => {
                         }}
                         type="secondary"
                     >
-                        THISKYHALL • Ho Chi Minh, Viet Nam
+                        {event?.location}
                     </Typography.Text>
-                </Flex>
-                <Flex gap={10}>
-                    {Array.from({ length: 2 }).map((_, index) => (
-                        <Tag key={index}>Blockchain</Tag>
-                    ))}
                 </Flex>
             </Flex>
         </Flex>

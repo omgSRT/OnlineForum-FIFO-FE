@@ -1,16 +1,30 @@
-import { RootState } from '@/stores';
+import { setAccountState } from '@/stores/account';
+import { Account } from '@/types/account';
 import { Avatar, Flex, Typography } from 'antd';
-import { useSelector } from 'react-redux';
+import { FC } from 'react';
+import { useDispatch } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import AvatarPlaceholder from '/public/avatar-placeholder.svg';
 
-export const UserInfo = () => {
-    const { accountInfo } = useSelector((state: RootState) => state.account);
+interface UserInfoProps {
+    account: Account;
+}
+
+export const UserInfo: FC<UserInfoProps> = ({ account }) => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const handleNavigate = () => {
+        navigate(`/user-profile/${account?.accountId}`);
+        dispatch(setAccountState({ userInfo: account }));
+    };
 
     return (
-        <Flex align="center">
-            <Avatar size={40} shape="circle" src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" />
+        <Flex align="center" onClick={handleNavigate} gap={8}>
+            <Avatar size={40} shape="circle" src={account?.avatar || AvatarPlaceholder} />
             <Flex vertical>
-                <Typography.Text>{accountInfo?.username}</Typography.Text>
-                <Typography.Text type="secondary">@{accountInfo?.username?.toLowerCase()}</Typography.Text>
+                <Typography.Text>{account?.username}</Typography.Text>
+                <Typography.Text type="secondary">{account?.handle?.toLowerCase()}</Typography.Text>
             </Flex>
         </Flex>
     );

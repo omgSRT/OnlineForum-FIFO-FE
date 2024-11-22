@@ -1,4 +1,5 @@
 import { ImageResponse } from '..';
+import { Account } from '../account';
 import { Tag } from '../tag/tag';
 import { Topic } from '../topic/topic';
 
@@ -18,7 +19,16 @@ export type Post = {
     createdDate: string;
     lastModifiedDate: string;
     imageList?: ImageResponse[];
-    tag: Tag
+    tag: Tag;
+    account: Account;
+    linkFile: string;
+    upvoteCount: number;
+    viewCount: number;
+    commentCount: number;
+    postFileList: {
+        postFileId: string;
+        url: string
+    }[]
 };
 
 export type CreatePostPayload = {
@@ -27,6 +37,8 @@ export type CreatePostPayload = {
     topicId: string;
     tagId: string;
     imageUrlList: { url: string }[];
+    linkFile: string;
+    postFileUrlRequest?: { url: string }[];
 };
 
 export type UpdatePostPayload = {
@@ -35,4 +47,6 @@ export type UpdatePostPayload = {
     topicId: string;
     tagId: string;
     imageUrlList: { url: string }[];
+    linkFile: string;
+    postFileUrlRequest?: { url: string }[];
 };

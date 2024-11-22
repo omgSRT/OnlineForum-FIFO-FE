@@ -8,7 +8,6 @@ import WrapperRouteComponent from './config';
 import { PATHS } from '@/utils/paths';
 import MainLayout from '@/layout/main-layout';
 import { RootState } from '@/stores';
-import { title } from 'process';
 
 const SignInPage = lazy(() => import('@/pages/auth/signin'));
 const SignUpPage = lazy(() => import('@/pages/auth/signup'));
@@ -19,8 +18,24 @@ const HomePage = lazy(() => import('@/pages/home'));
 const PostPage = lazy(() => import('@/pages/post'));
 const ProfilePage = lazy(() => import('@/pages/profile'));
 const NotFoundPage = lazy(() => import('@/pages/404'));
-const WalletPage = lazy(() => import('@/pages/wallet'))
-const NotificationPage = lazy(() => import('@/pages/notification'))
+const WalletPage = lazy(() => import('@/pages/wallet'));
+const NotificationPage = lazy(() => import('@/pages/notification'));
+const RewardPage = lazy(() => import('@/pages/reward'));
+const FeedbackPage = lazy(() => import('@/pages/feedback'));
+const UserProfilePage = lazy(() => import('@/pages/user-profile'));
+const AdminFeedbackPage = lazy(() => import('@/pages/admin/feedback'));
+const AdminReportPage = lazy(() => import('@/pages/admin/report'));
+const SearchPage = lazy(() => import('@/pages/search'));
+const AboutPage = lazy(() => import('@/pages/about'));
+const ContentPolicyPage = lazy(() => import('@/pages/content-policy'));
+const HelpPage = lazy(() => import('@/pages/help'));
+const EventsPage = lazy(() => import('@/pages/events'));
+const EventPage = lazy(() => import('@/pages/event'));
+const BookmarksPage = lazy(() => import('@/pages/bookmarks'));
+const PostDetailPage = lazy(() => import('@/pages/post-detail'));
+const DepositPage = lazy(() => import('@/pages/deposit'));
+const RecommendationsPage = lazy(() => import('@/pages/recommendations'));
+const ExplorePage = lazy(() => import('@/pages/explore'));
 
 const routes: RouteObject[] = [
     {
@@ -45,7 +60,71 @@ const routes: RouteObject[] = [
             },
             {
                 path: PATHS.NOTIFICATION,
-                element: <WrapperRouteComponent element={<NotificationPage />} title='Notification' />
+                element: <WrapperRouteComponent element={<NotificationPage />} title="Notification" />,
+            },
+            {
+                path: PATHS.REWARDS,
+                element: <WrapperRouteComponent element={<RewardPage />} title="Reward" />,
+            },
+            {
+                path: PATHS.FEEDBACKS,
+                element: <WrapperRouteComponent element={<FeedbackPage />} title="Feedback" />,
+            },
+            {
+                path: PATHS.ADMIN_FEEDBACKS,
+                element: <WrapperRouteComponent element={<AdminFeedbackPage />} title="Admin Feedback" />,
+            },
+            {
+                path: PATHS.USER_PROFILE,
+                element: <WrapperRouteComponent element={<UserProfilePage />} title="User Profile" />,
+            },
+            {
+                path: PATHS.ADMIN_REPORTS,
+                element: <WrapperRouteComponent element={<AdminReportPage />} title="Admin Reports" />,
+            },
+            {
+                path: PATHS.SEARCH,
+                element: <WrapperRouteComponent element={<SearchPage />} title="Search Page" />,
+            },
+            {
+                path: PATHS.ABOUT,
+                element: <WrapperRouteComponent element={<AboutPage />} title="About Page" />,
+            },
+            {
+                path: PATHS.CONTENT_POLICY,
+                element: <WrapperRouteComponent element={<ContentPolicyPage />} title="Content Policy" />,
+            },
+            {
+                path: PATHS.HELP,
+                element: <WrapperRouteComponent element={<HelpPage />} title="Help" />,
+            },
+            {
+                path: PATHS.EVENTS,
+                element: <WrapperRouteComponent element={<EventsPage />} title="Events" />,
+            },
+            {
+                path: PATHS.EVENT_DETAIL,
+                element: <WrapperRouteComponent element={<EventPage />} title="Event Detail" />,
+            },
+            {
+                path: PATHS.BOOKMARKS,
+                element: <WrapperRouteComponent element={<BookmarksPage />} title="Bookmarks" />,
+            },
+            {
+                path: PATHS.POST_DETAIL,
+                element: <WrapperRouteComponent element={<PostDetailPage />} title="Post Detail" />,
+            },
+            {
+                path: PATHS.DEPOSIT,
+                element: <WrapperRouteComponent element={<DepositPage />} title="Deposit" />,
+            },
+            {
+                path: PATHS.RECOMMENDATIONS,
+                element: <WrapperRouteComponent element={<RecommendationsPage />} title="Recommendations" />,
+            },
+            {
+                path: PATHS.EXPLORE,
+                element: <WrapperRouteComponent element={<ExplorePage />} title="Explore" />,
             }
         ],
     },

@@ -11,18 +11,22 @@ import { EventsWrapper } from '@/pages/home/layout/events-wrapper';
 import { MenuWrapper } from '@/pages/home/layout/menu-wrapper';
 import { PageWrapper } from '@/pages/home/layout/page-wrapper';
 import HeaderComponent from '@/pages/layout/header/header';
-import { ConfigProvider, Layout } from 'antd';
-import { FC } from 'react';
-import { Outlet } from 'react-router-dom';
+import { RightOutlined } from '@ant-design/icons';
+import { Breadcrumb, Button, ConfigProvider, Layout } from 'antd';
+import React, { FC, useState } from 'react';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
+import TagXSvg from '/public/tag-x.svg';
 
 interface MainLayoutProps {
     children?: React.ReactNode;
 }
 
 const MainLayout: FC<MainLayoutProps> = ({ children = <Outlet /> }) => {
+    const navigate = useNavigate();
+
     // load profile
     const { data: profileData, isLoading: isProfileLoading } = useProfile();
-    const {data: walletData, isLoading: isWalletLoading} = useWallet();
+    const { data: walletData, isLoading: isWalletLoading } = useWallet();
 
     return (
         <ConfigProvider theme={themeConfig}>
