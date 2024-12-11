@@ -1,22 +1,20 @@
-#### LIST TASK ####
-
-#### Ngô Bảo
-
--   [ ] Sign up
--   [ ] Sign in
--   [ ] Forgot password
--   [ ] Create new password
--   [ ] Wallet
--   [ ] Notification page
--   [ ] Bookmark
--   [ ] Help + Content policies + About
+#### LIST PAGES
 
 
-#### Anh Duy
+#### Ngọc Sơn
+- [ ] Sign up 
+- [ ] Sign in
+- [ ] Forgot password
+- [ ] Create new password
+- [ ] Wallet
+- [ ] Notification page
 
--   [ ] Home page
--   [ ] Create post
--   [ ] Post detail
--   [ ] Event page
--   [ ] Event detail page
--   [ ] Profile [Posts, Medias, Replies]
+#### Minh Đức
+- [ ] Home page
+- [ ] Create post
+- [ ] Post detail
+- [ ] Event page
+- [ ] Event detail page
+- [ ] Help + Content policies + About
+- [ ] Profile [Posts, Medias, Replies]
+ 
