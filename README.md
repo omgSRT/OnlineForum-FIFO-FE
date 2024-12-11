@@ -1,20 +1,28 @@
 #### LIST PAGES
 
 
-#### Ngọc Sơn
+#### Ngô Bảo
 - [ ] Sign up 
 - [ ] Sign in
 - [ ] Forgot password
 - [ ] Create new password
 - [ ] Wallet
 - [ ] Notification page
+- [ ] Profile [Posts, Medias, Replies]
+- [ ] Event page
+- [ ] Event detail page
+- [ ] Reward
+- [ ] Deposit
 
-#### Minh Đức
+#### Anh Duy
 - [ ] Home page
 - [ ] Create post
 - [ ] Post detail
-- [ ] Event page
-- [ ] Event detail page
 - [ ] Help + Content policies + About
-- [ ] Profile [Posts, Medias, Replies]
+- [ ] Popular Topic
+- [ ] Draft 
+- [ ] Feedback
+- [ ] Sreach
+      
+
  
